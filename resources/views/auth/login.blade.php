@@ -1,47 +1,165 @@
-<x-guest-layout>
-    <!-- Session Status -->
+
+
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Inicio de Sesión StyleRadar</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f97316",
+                        "background-dark": "#18181b",
+                        "neutral-dark": "#27272a",
+                        "border-dark": "#3f3f46",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+
+<div class="absolute top-0 left-0 w-full px-8 py-6">
+
+    <div class="flex justify-between items-center">
+
+        <!-- IZQUIERDA -->
+        <div class="flex items-center gap-8">
+
+            <div class="flex size-14 items-center justify-center rounded-xl bg-primary">
+                <span class="material-symbols-outlined text-white text-5xl"
+                      style="font-variation-settings:'FILL' 1;">
+                    content_cut
+                </span>
+            </div>
+
+            <div class="inline-block">
+                <h1 class="text-5xl font-black tracking-tighter text-white">
+                    StyleRadar
+                </h1>
+                <div class="h-1 w-full bg-primary mt-1 rounded-full"></div>
+            </div>
+
+        </div>
+        
+
+        <!-- DERECHA -->
+        <a href="{{ url()->previous() }}"
+           class="bg-primary text-white text-1xl font-bold px-5 py-2 rounded-full">
+            REGRESAR
+        </a>
+
+    </div>
+
+</div>
+
+<body class="bg-background-dark text-slate-100 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-[480px] flex flex-col gap-8 bg-neutral-dark p-10 rounded-2xl shadow-2xl border border-border-dark">
+
+
+
+    <div class="flex flex-col gap-2 text-center">
+        <h1 class="text-white text-4xl font-black">Bienvenido de nuevo</h1>
+        <p class="text-slate-400 text-base font-medium">
+        
+        </p>
+    </div>
+
+    {{-- MENSAJE DE ESTADO --}}
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-6">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        {{-- EMAIL --}}
+        <div class="flex flex-col gap-2">
+            <label class="text-slate-200 text-sm font-bold uppercase tracking-wider">
+                Correo electrónico
             </label>
+
+            <input 
+                name="email"
+                type="email"
+                value="{{ old('email') }}"
+                required
+                autofocus
+                class="w-full rounded-xl border border-border-dark bg-background-dark text-white focus:ring-2 focus:ring-primary focus:border-primary h-14 px-4 text-base font-medium"
+                placeholder="barbero@styleradar.com"
+            />
+
+            @error('email')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+        {{-- PASSWORD --}}
+        <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+                <label class="text-slate-200 text-sm font-bold uppercase tracking-wider">
+                    Contraseña
+                </label>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" 
+                       class="text-primary text-sm font-bold hover:underline">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                @endif
+            </div>
+
+            <input 
+                name="password"
+                type="password"
+                required
+                class="w-full rounded-xl border border-border-dark bg-background-dark text-white focus:ring-2 focus:ring-primary focus:border-primary h-14 px-4 text-base font-medium"
+                placeholder="••••••••"
+            />
+
+            @error('password')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+            @enderror
         </div>
+
+        {{-- REMEMBER --}}
+        <div class="flex items-center gap-3">
+            <input type="checkbox" name="remember" class="rounded">
+            <span class="text-sm text-slate-400">Recordarme</span>
+        </div>
+
+        {{-- BOTÓN LOGIN --}}
+        <button 
+            type="submit"
+            class="w-full h-14 bg-primary text-white rounded-xl font-black text-lg hover:bg-orange-600 hover:scale-[1.02] shadow-lg shadow-primary/30 transition-all uppercase tracking-wide">
+            Iniciar Sesión
+        </button>
+
+        {{-- REGISTER LINK --}}
+        <p class="text-center text-slate-400 text-sm mt-4 font-medium">
+            ¿No tienes una cuenta?
+            <a href="{{ route('register') }}" 
+               class="text-primary font-black hover:underline">
+                Regístrate gratis
+            </a>
+        </p>
+
     </form>
-</x-guest-layout>
+
+</div>
+
+</body>
+</html>
+
