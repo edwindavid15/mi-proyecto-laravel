@@ -1,17 +1,16 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ServicioRequest;
+use App\Http\Resources\ServicioResource;
 use App\Models\Servicio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ServicioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $user = Auth::user();
@@ -21,126 +20,72 @@ class ServicioController extends Controller
         } elseif ($user->isDueno()) {
             $servicios = Servicio::whereIn('peluqueria_id', $user->peluquerias->pluck('id'))->with(['peluqueria', 'peluquero'])->get();
         } else {
-            // Clientes ven todos los servicios disponibles
             $servicios = Servicio::with(['peluqueria', 'peluquero'])->get();
         }
 
-        return response()->json([
-            'servicios' => $servicios
-        ]);
+        return ServicioResource::collection($servicios);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(ServicioRequest $request)
     {
         $user = Auth::user();
 
-        if (!$user->isPeluquero() && !$user->isDueno()) {
-            return response()->json(['message' => 'No tienes permisos para crear servicios'], 403);
-        }
+        $data = $request->validatedData();
+        $data['peluquero_id'] = $user->id;
 
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'precio' => 'required|numeric|min:0',
-            'duracion' => 'nullable|integer|min:1',
-            'descripcion' => 'nullable|string',
-            'peluqueria_id' => 'required_if:is_dueno,true|exists:peluquerias,id',
-        ]);
-
-        $data = [
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'precio' => $request->precio,
-            'duracion' => $request->duracion,
-            'peluquero_id' => $user->id,
-        ];
-
-        // Si es dueño, puede asignar a una peluquería específica
-        if ($user->isDueno() && $request->has('peluqueria_id')) {
-            // Verificar que la peluquería pertenece al dueño
-            if (!$user->peluquerias()->where('id', $request->peluqueria_id)->exists()) {
+        if ($user->isDueno() && !empty($data['peluqueria_id'])) {
+            if (! $user->peluquerias()->where('id', $data['peluqueria_id'])->exists()) {
                 return response()->json(['message' => 'No tienes permisos sobre esta peluquería'], 403);
             }
-            $data['peluqueria_id'] = $request->peluqueria_id;
         }
 
         $servicio = Servicio::create($data);
 
         return response()->json([
-            'servicio' => $servicio->load(['peluqueria', 'peluquero']),
+            'servicio' => new ServicioResource($servicio->load(['peluqueria', 'peluquero'])),
             'message' => 'Servicio creado correctamente'
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
+    public function show(Servicio $servicio)
     {
-        $servicio = Servicio::with(['peluqueria', 'peluquero'])->findOrFail($id);
-
-        return response()->json([
-            'servicio' => $servicio
-        ]);
+        return new ServicioResource($servicio->load(['peluqueria', 'peluquero']));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
+    public function update(ServicioRequest $request, Servicio $servicio)
     {
-        $servicio = Servicio::findOrFail($id);
         $user = Auth::user();
 
-        // Verificar permisos: solo el peluquero que creó el servicio o el dueño pueden editarlo
-        if ($servicio->peluquero_id !== $user->id && !$user->isDueno()) {
+        if ($servicio->peluquero_id !== $user->id && !$user->isDueno() && !$user->isAdmin()) {
             return response()->json(['message' => 'No tienes permisos para editar este servicio'], 403);
         }
 
-        // Si es dueño, verificar que el servicio pertenece a una de sus peluquerías
-        if ($user->isDueno() && !$user->peluquerias()->where('id', $servicio->peluqueria_id)->exists()) {
+        if ($user->isDueno() && ! $user->peluquerias()->where('id', $servicio->peluqueria_id)->exists()) {
             return response()->json(['message' => 'No tienes permisos sobre este servicio'], 403);
         }
 
-        $request->validate([
-            'nombre' => 'sometimes|required|string|max:255',
-            'precio' => 'sometimes|required|numeric|min:0',
-            'duracion' => 'nullable|integer|min:1',
-            'descripcion' => 'nullable|string',
-        ]);
-
-        $servicio->update($request->only(['nombre', 'descripcion', 'precio', 'duracion']));
+        $servicio->update($request->validatedData());
 
         return response()->json([
-            'servicio' => $servicio->load(['peluqueria', 'peluquero']),
+            'servicio' => new ServicioResource($servicio->load(['peluqueria', 'peluquero'])),
             'message' => 'Servicio actualizado correctamente'
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
+    public function destroy(Servicio $servicio)
     {
-        $servicio = Servicio::findOrFail($id);
         $user = Auth::user();
 
-        // Verificar permisos: solo el peluquero que creó el servicio o el dueño pueden eliminarlo
-        if ($servicio->peluquero_id !== $user->id && !$user->isDueno()) {
+        if ($servicio->peluquero_id !== $user->id && !$user->isDueno() && !$user->isAdmin()) {
             return response()->json(['message' => 'No tienes permisos para eliminar este servicio'], 403);
         }
 
-        // Si es dueño, verificar que el servicio pertenece a una de sus peluquerías
-        if ($user->isDueno() && !$user->peluquerias()->where('id', $servicio->peluqueria_id)->exists()) {
+        if ($user->isDueno() && ! $user->peluquerias()->where('id', $servicio->peluqueria_id)->exists()) {
             return response()->json(['message' => 'No tienes permisos sobre este servicio'], 403);
         }
 
         $servicio->delete();
 
-        return response()->json([
-            'message' => 'Servicio eliminado correctamente'
-        ]);
+        return response()->json(['message' => 'Servicio eliminado correctamente']);
     }
 }
