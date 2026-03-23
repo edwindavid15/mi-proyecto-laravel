@@ -56,6 +56,9 @@ class UserSeeder extends Seeder
                 'role' => User::ROLE_PELUQUERO,
                 'phone' => '+1234567893',
                 'is_active' => true,
+                'is_online' => true,
+                'latitud' => 40.7130,
+                'longitud' => -74.0062,
             ],
             [
                 'name' => 'Ana López',
@@ -64,6 +67,9 @@ class UserSeeder extends Seeder
                 'role' => User::ROLE_PELUQUERO,
                 'phone' => '+1234567894',
                 'is_active' => true,
+                'is_online' => false,
+                'latitud' => 40.7580,
+                'longitud' => -73.9850,
             ],
             [
                 'name' => 'Pedro Martínez',
@@ -72,6 +78,9 @@ class UserSeeder extends Seeder
                 'role' => User::ROLE_PELUQUERO,
                 'phone' => '+1234567895',
                 'is_active' => true,
+                'is_online' => true,
+                'latitud' => 40.7510,
+                'longitud' => -73.9930,
             ],
         ];
 

@@ -33,6 +33,9 @@ class User extends Authenticatable
         'role',
         'phone',
         'is_active',
+        'latitud',
+        'longitud',
+        'is_online',
     ];
 
     /**
@@ -56,6 +59,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_online' => 'boolean',
+            'latitud' => 'decimal:7',
+            'longitud' => 'decimal:7',
         ];
     }
 

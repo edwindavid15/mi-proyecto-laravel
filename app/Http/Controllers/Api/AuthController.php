@@ -151,6 +151,9 @@ class AuthController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
+            'is_online' => 'nullable|boolean',
             'current_password' => 'required_with:password|string',
             'password' => 'sometimes|required|string|min:8|confirmed',
         ]);
@@ -173,7 +176,7 @@ class AuthController extends Controller
         }
 
         try {
-            $user->update($request->only(['name', 'email', 'phone']));
+            $user->update($request->only(['name', 'email', 'phone', 'latitud', 'longitud', 'is_online']));
 
             return response()->json([
                 'message' => 'Perfil actualizado correctamente',

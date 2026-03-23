@@ -37,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Peluquerías
     Route::apiResource('peluquerias', PeluqueriaController::class);
+    Route::get('peluquerias/nearby', [PeluqueriaController::class, 'nearby']);
+    Route::get('peluqueros/nearby', [PeluqueriaController::class, 'peluquerosNearby']);
     Route::post('peluquerias/{id}/add-peluquero', [PeluqueriaController::class, 'addPeluquero']);
     Route::delete('peluquerias/{id}/remove-peluquero', [PeluqueriaController::class, 'removePeluquero']);
 

@@ -16,6 +16,7 @@ class Peluqueria extends Model
         'telefono',
         'latitud',
         'longitud',
+        'is_active',
         'owner_id',
     ];
 

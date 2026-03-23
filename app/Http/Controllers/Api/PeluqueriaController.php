@@ -23,12 +23,77 @@ class PeluqueriaController extends Controller
             // Peluqueros ven las peluquerías donde trabajan
             $peluquerias = $user->peluquerias()->with(['owner', 'peluqueros'])->get();
         } else {
-            // Clientes ven todas las peluquerías disponibles
-            $peluquerias = Peluqueria::with(['owner', 'peluqueros'])->get();
+            // Clientes ven todas las peluquerías activas y disponibles
+            $peluquerias = Peluqueria::where('is_active', true)
+                ->with(['owner', 'peluqueros'])
+                ->get();
         }
 
         return response()->json([
             'peluquerias' => $peluquerias
+        ]);
+    }
+
+    /**
+     * Display nearby peluquerías (por latitud/longitud y radio en km).
+     */
+    public function nearby(Request $request)
+    {
+        $request->validate([
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
+            'radio' => 'nullable|numeric|min:0',
+        ]);
+
+        $lat = $request->input('latitud');
+        $lng = $request->input('longitud');
+        $radius = $request->input('radio', 10);
+
+        $distanceFormula = "(6371 * acos(cos(radians($lat)) * cos(radians(latitud)) * cos(radians(longitud) - radians($lng)) + sin(radians($lat)) * sin(radians(latitud))))";
+
+        $peluquerias = Peluqueria::whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->selectRaw("*, {$distanceFormula} as distancia")
+            ->having('distancia', '<=', $radius)
+            ->orderBy('distancia')
+            ->with(['owner', 'peluqueros'])
+            ->get();
+
+        return response()->json([
+            'peluquerias' => $peluquerias,
+            'params' => ['latitud' => $lat, 'longitud' => $lng, 'radio' => $radius]
+        ]);
+    }
+
+    /**
+     * Display nearby peluqueros activos (por latitud/longitud y radio en km).
+     */
+    public function peluquerosNearby(Request $request)
+    {
+        $request->validate([
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
+            'radio' => 'nullable|numeric|min:0',
+        ]);
+
+        $lat = $request->input('latitud');
+        $lng = $request->input('longitud');
+        $radius = $request->input('radio', 10);
+
+        $distanceFormula = "(6371 * acos(cos(radians($lat)) * cos(radians(latitud)) * cos(radians(longitud) - radians($lng)) + sin(radians($lat)) * sin(radians(latitud))))";
+
+        $peluqueros = \App\Models\User::where('role', 'peluquero')
+            ->where('is_online', true)
+            ->whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->selectRaw("*, {$distanceFormula} as distancia")
+            ->having('distancia', '<=', $radius)
+            ->orderBy('distancia')
+            ->get();
+
+        return response()->json([
+            'peluqueros' => $peluqueros,
+            'params' => ['latitud' => $lat, 'longitud' => $lng, 'radio' => $radius]
         ]);
     }
 
