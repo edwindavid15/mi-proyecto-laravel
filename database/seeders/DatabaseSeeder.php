@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,11 +14,31 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->command->info('Iniciando seeding de BarberApp...');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $this->command->info('Creando usuarios...');
+        $this->call(UserSeeder::class);
+
+        $this->command->info('Creando peluquerías...');
+        $this->call(PeluqueriaSeeder::class);
+
+        $this->command->info('Creando servicios...');
+        $this->call(ServicioSeeder::class);
+
+        $this->command->info('Creando citas...');
+        $this->call(CitaSeeder::class);
+
+        $this->command->info('Seeding completado exitosamente!');
+        $this->command->info('');
+        $this->command->info('Datos de prueba creados:');
+        $this->command->info('- 1 Administrador');
+        $this->command->info('- 2 Dueños de peluquería');
+        $this->command->info('- 3 Peluqueros');
+        $this->command->info('- 3 Clientes');
+        $this->command->info('- 3 Peluquerías');
+        $this->command->info('- Múltiples servicios');
+        $this->command->info('- 50+ citas de prueba');
+        $this->command->info('');
+        $this->command->info('Credenciales de admin: admin@barberapp.com / password');
     }
 }
